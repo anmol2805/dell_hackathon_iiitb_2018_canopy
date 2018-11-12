@@ -39,17 +39,21 @@ public class Messagechain {
 		
 		//testing
 		Block block1 = new Block(genesis.hash);
-		block1.addTransaction(sender.sendmessages(receiver.publicKey, "block1"));
+		System.out.println("sender:" + sender.getMessage());
+		block1.addTransaction(sender.sendmessages(receiver.publicKey, "Hello Dell"));
 		addBlock(block1);
+		
+		System.out.println("receiver:" + receiver.getMessage());
 
 		
 		Block block2 = new Block(block1.hash);
-		block2.addTransaction(sender.sendmessages(receiver.publicKey, "block2"));
+		block2.addTransaction(sender.sendmessages(receiver.publicKey, "Hello Dell"));
 		addBlock(block2);
-		
+		System.out.println("receiver:" + receiver.getMessage());
 		Block block3 = new Block(block2.hash);
-		
-		block3.addTransaction(receiver.sendmessages( sender.publicKey, "block3"));
+		block3.addTransaction(receiver.sendmessages( sender.publicKey, "I got the message"));
+		addBlock(block3);
+		System.out.println("sender:" + sender.getMessage());
 		
 		isChainValid();
 		
