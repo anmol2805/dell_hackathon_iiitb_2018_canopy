@@ -5,15 +5,15 @@ import java.security.PublicKey;
 public class TransactionOutput {
 	public String id;
 	public PublicKey reciepient; //new owner of these messages.
-	public float value; 
+	public String msg; 
 	public String parentTransactionId; //the id of the transaction this output was created in
 	
 	//Constructor
-	public TransactionOutput(PublicKey reciepient, float value, String parentTransactionId) {
+	public TransactionOutput(PublicKey reciepient, String msg, String parentTransactionId) {
 		this.reciepient = reciepient;
-		this.value = value;
+		this.msg = msg;
 		this.parentTransactionId = parentTransactionId;
-		this.id = StringUtil.applySha256(StringUtil.getStringFromKey(reciepient)+Float.toString(value)+parentTransactionId);
+		this.id = StringUtil.applySha256(StringUtil.getStringFromKey(reciepient)+msg+parentTransactionId);
 	}
 	
 	

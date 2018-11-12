@@ -34,34 +34,31 @@ public class Inbox {
 		}
 	}
 	
-	public float getBalance() {
-		float total = 0;	
+	public String getMessage() {
+		String finalmsg = "";	
         for (Map.Entry<String, TransactionOutput> item: Messagechain.UTXOs.entrySet()){
         	TransactionOutput UTXO = item.getValue();
             if(UTXO.isMine(publicKey)) { //if message belongs to me
             	UTXOs.put(UTXO.id,UTXO); 
-            	total += UTXO.value ; 
+            	finalmsg = UTXO.msg ; 
             }
         }  
-		return total;
+		return finalmsg;
 	}
 	
-	public Transaction sendmessages(PublicKey _recipient,float value ) {
-		if(getBalance() < value) {
-			
-			return null;
-		}
+	public Transaction sendmessages(PublicKey _recipient,String msg ) {
+		
 		ArrayList<TransactionInput> inputs = new ArrayList<TransactionInput>();
 		
-		float total = 0;
+		String finalmsg = "";
 		for (Map.Entry<String, TransactionOutput> item: UTXOs.entrySet()){
 			TransactionOutput UTXO = item.getValue();
-			total += UTXO.value;
+			finalmsg = UTXO.msg;
 			inputs.add(new TransactionInput(UTXO.id));
-			if(total > value) break;
+		
 		}
 		
-		Transaction newTransaction = new Transaction(publicKey, _recipient , value, inputs);
+		Transaction newTransaction = new Transaction(publicKey, _recipient , msg, inputs);
 		newTransaction.generateSignature(privateKey);
 		
 		for(TransactionInput input: inputs){

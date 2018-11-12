@@ -8,7 +8,7 @@ public class Transaction {
 	public String transactionId; //Contains a hash of transaction*
 	public PublicKey sender; //Senders address/public key.
 	public PublicKey reciepient; //Recipients address/public key.
-	public float value;
+	public String msg;
 	public byte[] signature; //This is to prevent anybody else from sending messages from our inbox.
 	
 	public ArrayList<TransactionInput> inputs = new ArrayList<TransactionInput>();
@@ -17,10 +17,10 @@ public class Transaction {
 	private static int sequence = 0; //A rough count of how many transactions have been generated 
 	
 	// Constructor: 
-	public Transaction(PublicKey from, PublicKey to, float value,  ArrayList<TransactionInput> inputs) {
+	public Transaction(PublicKey from, PublicKey to, String msg,  ArrayList<TransactionInput> inputs) {
 		this.sender = from;
 		this.reciepient = to;
-		this.value = value;
+		this.msg = msg;
 		this.inputs = inputs;
 	}
 	
@@ -37,17 +37,17 @@ public class Transaction {
 		}
 
 		//Checks if transaction is valid:
-		if(getInputsValue() < Messagechain.minimumTransaction) {
-			System.out.println("Transaction Inputs too small: " + getInputsValue());
-			System.out.println("Please enter the amount greater than " + Messagechain.minimumTransaction);
-			return false;
-		}
+//		if(getInputsValue() < Messagechain.minimumTransaction) {
+//			System.out.println("Transaction Inputs too small: " + getInputsValue());
+//			System.out.println("Please enter the amount greater than " + Messagechain.minimumTransaction);
+//			return false;
+//		}
 		
 		//Generate transaction outputs:
-		float leftOver = getInputsValue() - value; //get value of inputs then the left over change:
+//		float leftOver = getInputsValue(); //get value of inputs then the left over change:
 		transactionId = calulateHash();
-		outputs.add(new TransactionOutput( this.reciepient, value,transactionId)); //send value to recipient
-		outputs.add(new TransactionOutput( this.sender, leftOver,transactionId)); //send the left over 'change' back to sender		
+		outputs.add(new TransactionOutput( this.reciepient, msg,transactionId)); //send value to recipient
+//		outputs.add(new TransactionOutput( this.sender, leftOver,transactionId)); //send the left over 'change' back to sender		
 				
 		//Add outputs to Unspent list
 		for(TransactionOutput o : outputs) {
@@ -63,39 +63,39 @@ public class Transaction {
 		return true;
 	}
 	
-	public float getInputsValue() {
-		float total = 0;
-		for(TransactionInput i : inputs) {
-			if(i.UTXO == null) continue; 
-			total += i.UTXO.value;
-		}
-		return total;
-	}
+//	public float getInputsValue() {
+//		float total = 0;
+//		for(TransactionInput i : inputs) {
+//			if(i.UTXO == null) continue; 
+//			total += i.UTXO.value;
+//		}
+//		return total;
+//	}
 	
 	public void generateSignature(PrivateKey privateKey) {
-		String data = StringUtil.getStringFromKey(sender) + StringUtil.getStringFromKey(reciepient) + Float.toString(value)	;
+		String data = StringUtil.getStringFromKey(sender) + StringUtil.getStringFromKey(reciepient) + msg	;
 		signature = StringUtil.applyECDSASig(privateKey,data);		
 	}
 	
 	public boolean verifySignature() {
-		String data = StringUtil.getStringFromKey(sender) + StringUtil.getStringFromKey(reciepient) + Float.toString(value)	;
+		String data = StringUtil.getStringFromKey(sender) + StringUtil.getStringFromKey(reciepient) + msg	;
 		return StringUtil.verifyECDSASig(sender, data, signature);
 	}
 	
-	public float getOutputsValue() {
-		float total = 0;
-		for(TransactionOutput o : outputs) {
-			total += o.value;
-		}
-		return total;
-	}
+//	public float getOutputsValue() {
+//		float total = 0;
+//		for(TransactionOutput o : outputs) {
+//			total += o.value;
+//		}
+//		return total;
+//	}
 	
 	private String calulateHash() {
 		sequence++; //increase the sequence to avoid 2 identical transactions having the same hash
 		return StringUtil.applySha256(
 				StringUtil.getStringFromKey(sender) +
 				StringUtil.getStringFromKey(reciepient) +
-				Float.toString(value) + sequence
+				msg + sequence
 				);
 	}
 }

@@ -26,10 +26,10 @@ public class Messagechain {
 		Inbox message = new Inbox();
 		
 		//create genesis transaction, which sends message
-		genesisTransaction = new Transaction(message.publicKey, sender.publicKey, 100f, null);
+		genesisTransaction = new Transaction(message.publicKey, sender.publicKey, "Hello Dell", null);
 		genesisTransaction.generateSignature(message.privateKey);	 //manually sign the genesis transaction	
 		genesisTransaction.transactionId = "0"; //manually set the transaction id
-		genesisTransaction.outputs.add(new TransactionOutput(genesisTransaction.reciepient, genesisTransaction.value, genesisTransaction.transactionId)); //manually add the Transactions Output
+		genesisTransaction.outputs.add(new TransactionOutput(genesisTransaction.reciepient, genesisTransaction.msg, genesisTransaction.transactionId)); //manually add the Transactions Output
 		UTXOs.put(genesisTransaction.outputs.get(0).id, genesisTransaction.outputs.get(0)); //its important to store our first transaction in the UTXOs list.
 		
 		System.out.println("Creating and Mining Genesis block... ");
@@ -39,17 +39,17 @@ public class Messagechain {
 		
 		//testing
 		Block block1 = new Block(genesis.hash);
-		block1.addTransaction(sender.sendmessages(receiver.publicKey, 40f));
+		block1.addTransaction(sender.sendmessages(receiver.publicKey, "block1"));
 		addBlock(block1);
 
 		
 		Block block2 = new Block(block1.hash);
-		block2.addTransaction(sender.sendmessages(receiver.publicKey, 1000f));
+		block2.addTransaction(sender.sendmessages(receiver.publicKey, "block2"));
 		addBlock(block2);
 		
 		Block block3 = new Block(block2.hash);
 		
-		block3.addTransaction(receiver.sendmessages( sender.publicKey, 20));
+		block3.addTransaction(receiver.sendmessages( sender.publicKey, "block3"));
 		
 		isChainValid();
 		
@@ -92,11 +92,11 @@ public class Messagechain {
 					System.out.println("#Signature on Transaction(" + t + ") is Invalid");
 					return false; 
 				}
-				if(currentTransaction.getInputsValue() != currentTransaction.getOutputsValue()) {
-					System.out.println("#Inputs are note equal to outputs on Transaction(" + t + ")");
-					return false; 
-				}
-				
+//				if(currentTransaction.getInputsValue() != currentTransaction.getOutputsValue()) {
+//					System.out.println("#Inputs are note equal to outputs on Transaction(" + t + ")");
+//					return false; 
+//				}
+//				
 				for(TransactionInput input: currentTransaction.inputs) {	
 					tempOutput = tempUTXOs.get(input.transactionOutputId);
 					
@@ -105,7 +105,7 @@ public class Messagechain {
 						return false;
 					}
 					
-					if(input.UTXO.value != tempOutput.value) {
+					if(input.UTXO.msg != tempOutput.msg) {
 						System.out.println("#Referenced input Transaction(" + t + ") value is Invalid");
 						return false;
 					}
@@ -121,10 +121,10 @@ public class Messagechain {
 					System.out.println("#Transaction(" + t + ") output reciepient is not who it should be");
 					return false;
 				}
-				if( currentTransaction.outputs.get(1).reciepient != currentTransaction.sender) {
-					System.out.println("#Transaction(" + t + ") output 'change' is not sender.");
-					return false;
-				}
+//				if( currentTransaction.outputs.get(1).reciepient != currentTransaction.sender) {
+//					System.out.println("#Transaction(" + t + ") output 'change' is not sender.");
+//					return false;
+//				}
 				
 			}
 			
