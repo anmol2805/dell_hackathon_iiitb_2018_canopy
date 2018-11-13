@@ -5,7 +5,20 @@ import java.util.ArrayList;
 //import java.util.Base64;
 import java.util.HashMap;
 
-public class Messagechain {
+
+import javafx.application.Application;
+
+import javafx.geometry.Insets;
+import javafx.scene.Scene;
+import javafx.scene.control.Button;
+import javafx.scene.control.ListView;
+import javafx.scene.control.TextField;
+
+import javafx.scene.layout.VBox;
+import javafx.scene.text.Text;
+import javafx.stage.Stage;
+
+public class Messagechain extends Application {
 	
 	public static ArrayList<Block> blockchain = new ArrayList<Block>();
 	public static HashMap<String,TransactionOutput> UTXOs = new HashMap<String,TransactionOutput>();
@@ -15,16 +28,20 @@ public class Messagechain {
 	public static Inbox sender;
 	public static Inbox receiver;
 	public static Transaction genesisTransaction;
-
+	private static String hash;
+	Button button;
+	Stage window;
+	Scene scene;
+	ListView<String> listview,listview2;
 	public static void main(String[] args) {	
+		
 		//add our blocks to the blockchain ArrayList:
 		Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider()); //Setup Bouncey castle as a Security Provider
 		
-		//Create wallets:
+		//Create inboxes:
 		sender = new Inbox();
 		receiver = new Inbox();		
 		Inbox message = new Inbox();
-		
 		//create genesis transaction, which sends message
 		genesisTransaction = new Transaction(message.publicKey, sender.publicKey, "Hello Dell", null);
 		genesisTransaction.generateSignature(message.privateKey);	 //manually sign the genesis transaction	
@@ -36,26 +53,10 @@ public class Messagechain {
 		Block genesis = new Block("0");
 		genesis.addTransaction(genesisTransaction);
 		addBlock(genesis);
-		
-		//testing
-		Block block1 = new Block(genesis.hash);
-		System.out.println("sender:" + sender.getMessage());
-		block1.addTransaction(sender.sendmessages(receiver.publicKey, "Hello Dell"));
-		addBlock(block1);
-		
-		System.out.println("receiver:" + receiver.getMessage());
+		hash = genesis.hash;
+		launch(args);
 
 		
-		Block block2 = new Block(block1.hash);
-		block2.addTransaction(sender.sendmessages(receiver.publicKey, "Hello Dell"));
-		addBlock(block2);
-		System.out.println("receiver:" + receiver.getMessage());
-		Block block3 = new Block(block2.hash);
-		block3.addTransaction(receiver.sendmessages( sender.publicKey, "I got the message"));
-		addBlock(block3);
-		System.out.println("sender:" + sender.getMessage());
-		
-		isChainValid();
 		
 	}
 	
@@ -96,11 +97,7 @@ public class Messagechain {
 					System.out.println("#Signature on Transaction(" + t + ") is Invalid");
 					return false; 
 				}
-//				if(currentTransaction.getInputsValue() != currentTransaction.getOutputsValue()) {
-//					System.out.println("#Inputs are note equal to outputs on Transaction(" + t + ")");
-//					return false; 
-//				}
-//				
+			
 				for(TransactionInput input: currentTransaction.inputs) {	
 					tempOutput = tempUTXOs.get(input.transactionOutputId);
 					
@@ -125,10 +122,7 @@ public class Messagechain {
 					System.out.println("#Transaction(" + t + ") output reciepient is not who it should be");
 					return false;
 				}
-//				if( currentTransaction.outputs.get(1).reciepient != currentTransaction.sender) {
-//					System.out.println("#Transaction(" + t + ") output 'change' is not sender.");
-//					return false;
-//				}
+
 				
 			}
 			
@@ -141,4 +135,68 @@ public class Messagechain {
 		newBlock.mineBlock(difficulty);
 		blockchain.add(newBlock);
 	}
+
+	@Override
+	public void start(Stage primarystage) throws Exception {
+		// TODO Auto-generated method stub
+		window = primarystage;
+		window.setTitle("message sender");
+		button = new Button();
+		listview = new ListView<>();
+		TextField messageinput = new TextField();
+		Text textview = new Text();
+		textview.setText("Sent Messages");
+		Text textview2 = new Text();
+		textview2.setText("Received Messages");
+		button.setText("Send");
+		button.setOnAction(e-> sendtypedmessage(messageinput.getText()));
+		
+		
+		VBox layout = new VBox(10);
+	    layout.setPadding(new Insets(20, 20, 20, 20));
+	    layout.getChildren().addAll(messageinput, button,textview,listview);
+	    scene = new Scene(layout, 300, 250);
+	    window.setScene(scene);
+	    window.show();
+	    Stage secondStage = new Stage();
+	    Stage window2 = secondStage;
+	    window2.setTitle("message receiver");
+	    listview2 = new ListView<>();
+	    VBox layout2 = new VBox(10);
+	    layout2.setPadding(new Insets(20, 20, 20, 20));
+	    layout2.getChildren().addAll(textview2,listview2);
+	    Scene scene2 = new Scene(layout2, 300, 250);
+	    window2.setScene(scene2);
+	    window2.show();
+        		
+	    
+	}
+
+	
+
+	private Object sendtypedmessage(String text) {
+		// TODO Auto-generated method stub
+		
+		Block block = new Block(hash);
+		block.addTransaction(sender.sendmessages(receiver.publicKey, text));
+		addBlock(block);
+		System.out.println("receiver:" + receiver.getMessage());
+		listview2.getItems().add(receiver.getMessage());
+		hash = block.hash;
+		Block block2 = new Block(hash);
+		block2.addTransaction(receiver.sendmessages(sender.publicKey, "message delivered"));
+		addBlock(block2);
+		System.out.println("sender:" + sender.getMessage());
+		hash = block2.hash;
+		listview.getItems().add(text);
+		
+		isChainValid();
+		Alertbox.display();
+		
+		return null;
+	}
+
+	
+	
+	
 }

@@ -36,25 +36,20 @@ public class Transaction {
 			i.UTXO = Messagechain.UTXOs.get(i.transactionOutputId);
 		}
 
-		//Checks if transaction is valid:
-//		if(getInputsValue() < Messagechain.minimumTransaction) {
-//			System.out.println("Transaction Inputs too small: " + getInputsValue());
-//			System.out.println("Please enter the amount greater than " + Messagechain.minimumTransaction);
-//			return false;
-//		}
+
 		
 		//Generate transaction outputs:
-//		float leftOver = getInputsValue(); //get value of inputs then the left over change:
+
 		transactionId = calulateHash();
 		outputs.add(new TransactionOutput( this.reciepient, msg,transactionId)); //send value to recipient
-//		outputs.add(new TransactionOutput( this.sender, leftOver,transactionId)); //send the left over 'change' back to sender		
+		
 				
-		//Add outputs to Unspent list
+		
 		for(TransactionOutput o : outputs) {
 			Messagechain.UTXOs.put(o.id , o);
 		}
 		
-		//Remove transaction inputs from UTXO lists as spent:
+		
 		for(TransactionInput i : inputs) {
 			if(i.UTXO == null) continue; //if Transaction can't be found skip it 
 			Messagechain.UTXOs.remove(i.UTXO.id);
@@ -62,15 +57,7 @@ public class Transaction {
 		
 		return true;
 	}
-	
-//	public float getInputsValue() {
-//		float total = 0;
-//		for(TransactionInput i : inputs) {
-//			if(i.UTXO == null) continue; 
-//			total += i.UTXO.value;
-//		}
-//		return total;
-//	}
+
 	
 	public void generateSignature(PrivateKey privateKey) {
 		String data = StringUtil.getStringFromKey(sender) + StringUtil.getStringFromKey(reciepient) + msg	;
@@ -82,14 +69,7 @@ public class Transaction {
 		return StringUtil.verifyECDSASig(sender, data, signature);
 	}
 	
-//	public float getOutputsValue() {
-//		float total = 0;
-//		for(TransactionOutput o : outputs) {
-//			total += o.value;
-//		}
-//		return total;
-//	}
-	
+
 	private String calulateHash() {
 		sequence++; //increase the sequence to avoid 2 identical transactions having the same hash
 		return StringUtil.applySha256(
